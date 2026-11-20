@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#61180f">
+<meta name="color-scheme" content="light">
+<title>הצהרת בריאות - פאדל לב השרון</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --maroon: #61180f;
+    --maroon-2: #7d2a1d;
+    --beige: #faf4ef;
+    --beige-2: #f2e6dc;
+    --line: #ead9ce;
+    --field: #dcc9bd;
+    --ink: #2a1f1c;
+    --muted: #7b6c66;
+    --err: #b42318;
+    --ok: #2e6b4f;
+  }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body {
+    margin: 0;
+    background: var(--beige);
+    font-family: 'Heebo', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+    color: var(--ink);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---------- כותרת ---------- */
+  .tex { background-color: var(--maroon); background-image: var(--tex); background-size: cover; background-position: center; }
+  .hero {
+    color: #fff;
+    padding: 20px 16px 22px;
+  }
+  .hero-inner { max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+  .hero .logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #f4ece6; flex: none; display: block; }
+  .hero h1 { font-size: 22px; line-height: 1.2; margin: 0; font-weight: 700; }
+  .hero p { margin: 3px 0 0; font-size: 13px; opacity: .8; }
+
+  .intro { max-width: 560px; margin: 0 auto; padding: 22px 16px 4px; }
+  .intro h2 { font-size: 25px; line-height: 1.25; color: var(--maroon); margin: 0; font-weight: 700; }
+  .intro p { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 8px 0 0; }
+  .pill {
+    display: inline-block; margin-top: 10px;
+    background: #fff; border: 1px solid var(--line); color: var(--maroon);
+    font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px;
+  }
+
+  main { max-width: 560px; margin: 0 auto; padding: 4px 16px 48px; }
+
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; margin-top: 14px; }
+  .card h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 17px; color: var(--maroon); font-weight: 700; }
+  .step { width: 26px; height: 26px; border-radius: 50%; background: var(--maroon); color: #fff; font-size: 13px; display: grid; place-items: center; flex: none; }
+
+  /* ---------- שדות ---------- */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .lbl { display: block; font-weight: 500; font-size: 15px; margin-bottom: 6px; }
+  .in {
+    width: 100%; height: 48px; border: 1px solid var(--field); border-radius: 10px; padding: 0 12px;
+    font: inherit; font-size: 16px; background: #fff; color: var(--ink); text-align: right;
+    -webkit-appearance: none; appearance: none;
+  }
+  .dob { display: grid; grid-template-columns: 1fr 1.6fr 1.25fr; gap: 8px; }
+  select.in {
+    padding: 0 12px 0 30px; cursor: pointer;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237b6c66' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat left 12px center;
+  }
+  select.in:invalid, select.in.empty { color: #9a8b85; }
+  .age-badge { display: inline-block; margin-top: 8px; font-size: 13.5px; font-weight: 500; color: var(--maroon); background: var(--beige); border-radius: 99px; padding: 3px 12px; }
+  .in:focus { outline: 3px solid rgba(97, 24, 15, .14); border-color: var(--maroon); }
+  .ltr { direction: ltr; text-align: right; }
+  .help { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .err { color: var(--err); font-size: 13px; margin-top: 6px; display: none; }
+  .invalid .in { border-color: var(--err); }
+  .invalid .err { display: block; }
+
+  /* ---------- שאלון ---------- */
+  .hint { font-size: 14px; line-height: 1.55; background: var(--beige); border-right: 3px solid var(--maroon); border-radius: 8px; padding: 10px 12px; margin: 0 0 6px; }
+  .rules { margin: 10px 0 4px; font-size: 14px; }
+  .rules summary { cursor: pointer; color: var(--maroon); font-weight: 500; padding: 4px 0; }
+  .rules ol { margin: 8px 0 0; padding-right: 20px; line-height: 1.6; color: #4a3d39; }
+  .rules li { margin-bottom: 6px; }
+
+  .qg { border-top: 1px solid var(--line); padding: 12px 0 4px; }
+  .qg:first-of-type { margin-top: 10px; }
+  .q-main { font-weight: 500; font-size: 15px; line-height: 1.5; }
+  .q-num { color: var(--maroon); font-weight: 700; margin-left: 4px; }
+  .q-row { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; padding: 6px 0 8px; }
+  .q-text { font-size: 15px; line-height: 1.5; }
+  .q-sub .q-text { padding-right: 16px; }
+  .q-letter { color: var(--maroon); font-weight: 700; margin-left: 3px; }
+  .q-note { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .q-row.is-yes { background: #fdf3ee; margin: 2px -10px; padding: 8px 10px 10px; border-radius: 10px; }
+  .q-row.is-yes .q-text { color: var(--maroon); font-weight: 500; }
+  /* בחירה בין "לא" ל"כן": הכפתור שנבחר מלא בצבע ועם וי, השני לבן */
+  .seg { display: inline-flex; gap: 6px; }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .seg span {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    min-width: 62px; height: 42px; padding: 0 10px; border-radius: 10px;
+    border: 1.5px solid var(--field); background: #fff; color: #9a8b85;
+    font-size: 15px; font-weight: 500; transition: background .15s, color .15s, border-color .15s;
+  }
+  .seg span svg { display: none; flex: none; }
+  .seg input:checked + span { color: #fff; font-weight: 700; }
+  .seg input:checked + span svg { display: block; }
+  .seg .no input:checked + span { background: var(--ok); border-color: var(--ok); }
+  .seg .yes input:checked + span { background: var(--maroon); border-color: var(--maroon); }
+  .seg input:focus-visible + span { outline: 3px solid rgba(97, 24, 15, .25); outline-offset: 2px; }
+  .q-detail { grid-column: 1 / -1; display: none; }
+  .is-yes .q-detail { display: block; }
+  .alert {
+    display: none; background: #fff3ec; border: 1px solid #f0c8b5; border-right: 4px solid var(--maroon);
+    border-radius: 10px; padding: 12px; font-size: 14px; line-height: 1.55; margin-top: 12px;
+  }
+  .alert.show { display: block; }
+
+  /* ---------- הצהרה וחתימה ---------- */
+  .declare { font-size: 15px; line-height: 1.6; margin: 0 0 14px; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; line-height: 1.5; cursor: pointer; }
+  .check input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--maroon); flex: none; }
+  .invalid.check { color: var(--err); }
+  .sig {
+    position: relative; height: 170px; border: 1.5px dashed #cdb1a1; border-radius: 12px; background: #fffdfb;
+    touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden;
+  }
+  .sig::after { content: ""; position: absolute; right: 18px; left: 18px; bottom: 38px; border-bottom: 1px solid #e6d6cc; pointer-events: none; }
+  .sig canvas { position: relative; z-index: 1; display: block; width: 100%; height: 100%; touch-action: none; }
+  .sig-hint { position: absolute; inset: 0; display: grid; place-items: center; color: #b7a398; font-size: 15px; pointer-events: none; }
+  .sig.has .sig-hint { display: none; }
+  .sig-clear {
+    position: absolute; top: 8px; left: 8px; z-index: 2; border: 1px solid var(--line); background: #fff; color: var(--muted);
+    font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 99px; cursor: pointer;
+  }
+  .invalid .sig { border-color: var(--err); }
+
+  /* ---------- כפתורים ---------- */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 54px; border-radius: 12px;
+    font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; text-decoration: none; transition: transform .1s, background .15s;
+  }
+  .btn:active { transform: scale(.985); }
+  .btn-primary { border: 0; background: var(--maroon); color: #fff; }
+  .btn-primary:hover { background: var(--maroon-2); }
+  .btn-ghost { border: 1px solid var(--field); background: #fff; color: var(--ink); }
+  .submit { margin-top: 20px; }
+  .privacy { text-align: center; color: var(--muted); font-size: 13px; line-height: 1.5; margin: 12px 0 0; }
+
+  /* ---------- סיום ---------- */
+  .done { text-align: center; padding: 28px 18px; }
+  .done-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--maroon); display: grid; place-items: center; margin: 0 auto 14px; }
+  .done h3 { justify-content: center; font-size: 22px; margin-bottom: 6px; }
+  .done p { color: var(--muted); font-size: 15px; line-height: 1.55; margin: 0 0 18px; }
+  .done .btn + .btn { margin-top: 10px; }
+  .link-btn { background: none; border: 0; color: var(--maroon); font: inherit; font-size: 15px; font-weight: 500; margin-top: 16px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .demo-note { margin-top: 18px; font-size: 13px; color: var(--muted); background: var(--beige); border-radius: 10px; padding: 10px 12px; line-height: 1.5; }
+
+  .busy { position: fixed; inset: 0; z-index: 50; background: rgba(250, 244, 239, .97); display: none; place-items: center; text-align: center; }
+  .busy.show { display: grid; }
+  .spinner { width: 44px; height: 44px; border-radius: 50%; border: 4px solid var(--beige-2); border-top-color: var(--maroon); margin: 0 auto 14px; animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .busy p { font-size: 16px; font-weight: 500; color: var(--maroon); margin: 0; }
+
+  [hidden] { display: none !important; }
+
+  /* =====================================================
+     עמודי ה-PDF (נבנים רק בזמן יצירת הקובץ)
+     ===================================================== */
+  #pdf-root { position: absolute; top: 0; left: 0; z-index: -1; width: 794px; }
+  .pp {
+    --s: 1;
+    width: 794px; height: 1123px; position: relative; overflow: hidden; background: #fff;
+    font-family: 'Heebo', Arial, sans-serif; color: #2b2220; direction: rtl;
+  }
+  .pp-head {
+    height: 116px;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 30px 0 52px; color: #fff;
+  }
+  .pp-brand { display: flex; align-items: center; gap: 18px; }
+  .pp-logo { width: 88px; height: 88px; border-radius: 50%; border: 4px solid #f4ece6; display: block; }
+  .pp-brand b { display: block; font-size: 30px; font-weight: 700; line-height: 1.15; }
+  .pp-brand span { display: block; font-size: 14px; opacity: .78; margin-top: 4px; }
+  .pp-body { padding: calc(24px * var(--s)) 44px 0; font-size: calc(12.5px * var(--s)); line-height: 1.5; }
+  .pp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+  .pp-title h1 { margin: 0; font-size: calc(26px * var(--s)); line-height: 1.25; color: #61180f; font-weight: 700; }
+  .pp-title p { margin: 8px 0 0; color: #8a7b76; font-size: calc(12px * var(--s)); max-width: 270px; }
+  .pp-box { border: 1px dashed #e0b9a6; border-radius: 8px; padding: calc(12px * var(--s)) 18px; width: 340px; }
+  .pp-f { display: flex; align-items: flex-end; gap: 8px; margin: calc(4px * var(--s)) 0; font-weight: 500; }
+  .pp-f > span:first-child { white-space: nowrap; }
+  .pp-v { flex: 1; border-bottom: 1px solid #3a2a26; min-height: 1.5em; padding: 0 4px; font-weight: 400; color: #1b1f3b; }
+  .pp-h { display: flex; align-items: center; gap: 14px; margin: calc(16px * var(--s)) 0 calc(8px * var(--s)); }
+  .pp-h b { font-size: calc(15px * var(--s)); color: #61180f; white-space: nowrap; }
+  .pp-h i { flex: 1; height: 1px; background: #e2d6d0; }
+  .pp-rules { margin: 0; padding: 0; list-style: none; }
+  .pp-rules li { display: flex; gap: 6px; margin-bottom: 3px; }
+  .pp-rules li b { color: #61180f; }
+  .pp-note { background: #faf4ef; border-right: 3px solid #61180f; padding: calc(7px * var(--s)) 12px; margin: calc(12px * var(--s)) 0 calc(8px * var(--s)); }
+  .pp-q { width: 100%; border-collapse: collapse; }
+  .pp-q td { padding: calc(3px * var(--s)) 8px; border-bottom: 1px solid #f1e6df; vertical-align: top; }
+  .pp-q tr.main td { background: #faf4ef; }
+  .pp-q .n { width: 22px; color: #61180f; font-weight: 700; }
+  .pp-q .sub { padding-right: 22px; }
+  .pp-q .sub b { color: #61180f; margin-left: 4px; }
+  .pp-q .note { color: #8a7b76; font-size: .92em; }
+  .pp-q .a { width: 46px; text-align: center; color: #9c8d88; }
+  .pp-q .a.yes { color: #fff; background: #61180f !important; font-weight: 700; }
+  .pp-b { border: 1px dashed #e0b9a6; border-radius: 8px; padding: calc(10px * var(--s)) 18px calc(12px * var(--s)); margin-top: calc(16px * var(--s)); }
+  .pp-b .pp-h { margin-top: 0; }
+  .pp-b p { margin: 0 0 calc(6px * var(--s)); }
+  .pp-row { display: flex; gap: 18px; margin: calc(5px * var(--s)) 0; }
+  .pp-row .pp-f { margin: 0; }
+  .pp-row .qn { width: 140px; flex: none; }
+  .pp-row .qd { flex: 1; }
+  .pp-warn { color: #8a7b76; font-size: .92em; margin-top: calc(6px * var(--s)); }
+  .pp-sign { display: flex; gap: 22px; margin-top: calc(14px * var(--s)); align-items: flex-end; }
+  .pp-sign .pp-f { flex: 1; margin: 0; }
+  .pp-sigimg { height: calc(46px * var(--s)); max-width: 170px; object-fit: contain; display: block; margin-bottom: -4px; }
+  .pp-meta { margin-top: calc(10px * var(--s)); font-size: .9em; color: #8a7b76; }
+  .pp-foot {
+    position: absolute; bottom: 0; right: 0; left: 0; height: 46px;
+    color: #f3e4dc; display: flex; justify-content: space-between; align-items: center; padding: 0 44px; font-size: 12px;
+  }
+  .pp-foot b { color: #fff; }
+  .pp-dots { display: flex; gap: 8px; margin-top: 12px; }
+  .pp-dots i { width: 13px; height: 13px; border-radius: 50%; display: block; }
+  .pp-consent { width: 420px; border: 1px dashed #e0b9a6; border-radius: 8px; padding: 14px 18px; margin: 14px 0; }
+  .pp-consent .pp-f { margin: 12px 0; }
+  .pp-court { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); }
+</style>
+<script>
+window.ASSETS={logo:"data:image/png;base64,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",tex:"data:image/jpeg;base64,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"};
+document.documentElement.style.setProperty('--tex', 'url("' + window.ASSETS.tex + '")');
+document.querySelector('link[rel=icon]').href = window.ASSETS.logo;
+</script>
+</head>
+<body>
+
+<header class="hero tex">
+  <div class="hero-inner">
+    <img class="logo" data-asset="logo" alt="">
+    <div>
+      <h1>פאדל לב השרון</h1>
+      <p>מופעל על ידי אי די פאדל בע״מ</p>
+    </div>
+  </div>
+</header>
+
+<div class="intro" id="intro">
+  <h2>טופס הצהרת בריאות למתאמן/ת</h2>
+  <p>כמה דקות, וזה מוכן. בסוף נוצר קובץ PDF חתום.</p>
+  <span class="pill">גרסת הדגמה</span>
+</div>
+
+<main>
+  <form id="form" novalidate>
+
+    <section class="card">
+      <h3><span class="step">1</span>פרטים אישיים</h3>
+      <div class="field" data-f="name">
+        <label class="lbl" for="name">שם ושם משפחה</label>
+        <input class="in" id="name" type="text" autocomplete="name" enterkeyhint="next">
+        <div class="err">נא לכתוב שם פרטי ושם משפחה</div>
+      </div>
+      <div class="field" data-f="id">
+        <label class="lbl" for="tz">תעודת זהות</label>
+        <input class="in ltr" id="tz" type="text" inputmode="numeric" maxlength="9" autocomplete="off" enterkeyhint="next">
+        <div class="err">מספר תעודת הזהות לא תקין</div>
+      </div>
+      <div class="field" data-f="dob">
+        <span class="lbl" id="dobLbl">תאריך לידה</span>
+        <div class="dob" role="group" aria-labelledby="dobLbl">
+          <select class="in" id="dobD" aria-label="יום"><option value="">יום</option></select>
+          <select class="in" id="dobM" aria-label="חודש"><option value="">חודש</option></select>
+          <select class="in" id="dobY" aria-label="שנה"><option value="">שנה</option></select>
+        </div>
+        <div class="help" id="ageHelp"></div>
+        <div class="err">נא לבחור תאריך לידה מלא ותקין</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3><span class="step">2</span>שאלון רפואי</h3>
+      <p class="hint">התשובה לכל השאלות היא <b>"לא"</b> כברירת מחדל. אם התשובה לשאלה כלשהי היא "כן", סמנו "כן" ופרטו בקצרה.</p>
+      <details class="rules">
+        <summary>הנחיות המועדון</summary>
+        <ol>
+          <li>אם התשובה על אחת או יותר מהשאלות היא חיובית, לצורך קבלתך למועדון עליך להמציא גם תעודה רפואית מרופא, לפיה אין סיכון לבריאותך באימון במועדון. המועדון יקבל תעודה שלא עברו 3 חודשים ממועד הנפקתה.</li>
+          <li>אם התשובה לשאלה כלשהי היא חיובית, יש לציין זאת ולפרט.</li>
+          <li>בכל מקרה של שינוי במצבך הרפואי, יש להתייעץ עם רופא לגבי המשך פעילות במועדון.</li>
+        </ol>
+      </details>
+      <div id="questions"></div>
+      <div class="alert" id="yesAlert">ציינת "כן" לשאלה כלשהי, ולכן יש להמציא למועדון <b>תעודה רפואית מרופא</b> שלא עברו 3 חודשים ממועד הנפקתה.</div>
+    </section>
+
+    <section class="card">
+      <h3><span class="step">3</span>הצהרה וחתימה</h3>
+      <p class="declare">הנני מצהיר/ה כי קראתי את השאלות שבשאלון וכי התשובה לכולן היא "לא", למעט השאלות שסימנתי "כן" ופירטתי.</p>
+      <label class="check field" data-f="agree">
+        <input type="checkbox" id="agree">
+        <span>קראתי, והפרטים שמילאתי נכונים</span>
+      </label>
+      <div class="field" data-f="sig" style="margin-top:16px">
+        <span class="lbl">חתימה</span>
+        <div class="sig" id="sigMain">
+          <canvas aria-label="משטח חתימה"></canvas>
+          <span class="sig-hint">חתמו כאן באצבע</span>
+          <button type="button" class="sig-clear">נקה</button>
+        </div>
+        <div class="err">נא לחתום במשטח החתימה</div>
+      </div>
+    </section>
+
+    <section class="card" id="minorCard" hidden>
+      <h3><span class="step">4</span>הסכמת הורה (מתחת לגיל 18)</h3>
+      <p class="declare" id="minorText">מתאמן שלא מלאו לו 18 שנה צריך את ההסכמה של אחד מהוריו.</p>
+      <div class="field" data-f="pname">
+        <label class="lbl" for="pname">שם ההורה</label>
+        <input class="in" id="pname" type="text" autocomplete="off">
+        <div class="err">נא לכתוב את השם המלא של ההורה</div>
+      </div>
+      <div class="field" data-f="pid">
+        <label class="lbl" for="ptz">תעודת זהות של ההורה</label>
+        <input class="in ltr" id="ptz" type="text" inputmode="numeric" maxlength="9" autocomplete="off">
+        <div class="err">מספר תעודת הזהות של ההורה לא תקין</div>
+      </div>
+      <div class="field" data-f="psig">
+        <span class="lbl">חתימת ההורה</span>
+        <div class="sig" id="sigParent">
+          <canvas aria-label="משטח חתימת הורה"></canvas>
+          <span class="sig-hint">ההורה חותם/ת כאן</span>
+          <button type="button" class="sig-clear">נקה</button>
+        </div>
+        <div class="err">נא להחתים את ההורה</div>
+      </div>
+    </section>
+
+    <button type="submit" class="btn btn-primary submit">יצירת PDF חתום</button>
+    <p class="privacy">הפרטים לא נשלחים לשום מקום. הקובץ נוצר בטלפון שלך.</p>
+  </form>
+
+  <section class="card done" id="done" hidden>
+    <div class="done-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h3>ההצהרה מוכנה</h3>
+    <p id="doneText">קובץ PDF חתום נוצר.</p>
+    <button type="button" class="btn btn-primary" id="shareBtn" hidden>שליחת ה-PDF</button>
+    <a class="btn btn-ghost" id="openBtn" target="_blank" rel="noopener">פתיחת ה-PDF</a>
+    <button type="button" class="link-btn" id="againBtn">מילוי הצהרה חדשה</button>
+    <div class="demo-note">זו גרסת הדגמה. בגרסה המלאה עותק נשמר אוטומטית אצל המועדון, וכל הצהרה נכנסת לטבלה מסודרת.</div>
+  </section>
+</main>
+
+<div class="busy" id="busy" role="status" aria-live="polite">
+  <div><div class="spinner"></div><p>מכין את ה-PDF…</p></div>
+</div>
+
+<div id="pdf-root" aria-hidden="true"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- השאלון (נוסח מקורי) ---------- */
+  const QUESTIONS = [
+    { n: '1', t: 'האם הרופא שלך אמר שאתה סובל ממחלת לב?' },
+    { n: '2', t: 'האם אתה חש כאבים בחזה -', subs: [
+      ['א', 'בזמן מנוחה?'],
+      ['ב', 'במהלך פעילות שיגרה ביום-יום?'],
+      ['ג', 'בזמן שאתה מבצע פעילות גופנית?'] ] },
+    { n: '3', t: 'האם במהלך השנה החולפת -', subs: [
+      ['א', 'איבדת שיווי משקל עקב סחרחורת?', 'אין לציין "כן" אם הסחרחורת נבעה מנשימת יתר, כולל במהלך פעילות גופנית נמרצת'],
+      ['ב', 'איבדת את הכרתך?'] ] },
+    { n: '4', t: 'האם רופא אבחן שאתה סובל ממחלת האסתמה ולכן בשלושת החודשים האחרונים -', subs: [
+      ['א', 'נזקקת לטיפול תרופתי?'],
+      ['ב', 'סבלת מקוצר נשימה או צפצופים?'] ] },
+    { n: '5', t: 'האם אחד מבני משפחתך מדרגה קרובה נפטר -', subs: [
+      ['א', 'ממחלת לב?'],
+      ['ב', 'ממוות פתאומי בגיל מוקדם?', 'לפני גיל 55 אם מדובר בגבר, ולפני גיל 65 אם זו אישה'] ] },
+    { n: '6', t: 'האם הרופא שלך אמר לך ב-5 השנים האחרונות לבצע פעילות גופנית רק תחת השגחה רפואית?' },
+    { n: '7', t: 'האם הינך סובל ממחלה קבועה (כרונית), שאינה נזכרת בשאלות לעיל ועשויה למנוע או להגביל אותך בביצוע פעילות גופנית?' },
+    { n: '8', t: 'לנשים בהריון - האם ההריון הזה או כל הריון קודם הוגדר הריון בסיכון?' }
+  ];
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // הלוגו מוטמע בתוך הדף, כדי שיצירת ה-PDF תעבוד גם כשפותחים את הקובץ ישירות מהמחשב
+  $$('[data-asset=logo]').forEach(img => { img.src = window.ASSETS.logo; });
+
+  /* ---------- בניית השאלון בטופס ---------- */
+  const qWrap = $('#questions');
+  const leafIds = [];
+  const TICK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  function rowHtml(id, label, text, note, isSub) {
+    leafIds.push(id);
+    return `
+      <div class="q-row ${isSub ? 'q-sub' : ''}" data-q="${id}">
+        <div class="q-text">${label}${esc(text)}${note ? `<span class="q-note">(${esc(note)})</span>` : ''}</div>
+        <div class="seg" role="radiogroup" aria-label="תשובה לשאלה ${id}">
+          <label class="no"><input type="radio" name="q${id}" value="no" checked><span>${TICK}לא</span></label>
+          <label class="yes"><input type="radio" name="q${id}" value="yes"><span>${TICK}כן</span></label>
+        </div>
+        <div class="q-detail field" data-f="d${id}">
+          <input class="in" type="text" maxlength="110" placeholder="פרט/י בקצרה" aria-label="פירוט לשאלה ${id}">
+          <div class="err">נא לפרט בקצרה</div>
+        </div>
+      </div>`;
+  }
+  qWrap.innerHTML = QUESTIONS.map(q => {
+    if (!q.subs) return `<div class="qg">${rowHtml(q.n, `<span class="q-num">${q.n}.</span>`, q.t, null, false)}</div>`;
+    return `<div class="qg"><div class="q-main"><span class="q-num">${q.n}.</span>${esc(q.t)}</div>
+      ${q.subs.map(([l, t, note]) => rowHtml(q.n + l, `<span class="q-letter">${l}.</span>`, t, note, true)).join('')}</div>`;
+  }).join('');
+
+  function updateYes() {
+    let any = false;
+    $$('.q-row', qWrap).forEach(r => {
+      const yes = $('input[value=yes]', r).checked;
+      r.classList.toggle('is-yes', yes);
+      any = any || yes;
+    });
+    $('#yesAlert').classList.toggle('show', any);
+  }
+  qWrap.addEventListener('change', e => {
+    if (e.target.type !== 'radio') return;
+    updateYes();
+    const row = e.target.closest('.q-row');
+    if (e.target.value === 'yes') setTimeout(() => $('.q-detail input', row).focus({ preventScroll: true }), 50);
+  });
+
+  /* ---------- תעודת זהות ---------- */
+  function validId(v) {
+    v = String(v).trim();
+    if (!/^\d{5,9}$/.test(v)) return false;
+    v = v.padStart(9, '0');
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      let n = Number(v[i]) * (i % 2 + 1);
+      if (n > 9) n -= 9;
+      sum += n;
+    }
+    return sum % 10 === 0 && !/^0+$/.test(v);
+  }
+  ['#tz', '#ptz'].forEach(s => $(s).addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9); }));
+
+  /* ---------- גיל וקטין ---------- */
+  const todayIso = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+  const MONTHS = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+  const addOpts = (sel, items) => sel.insertAdjacentHTML('beforeend', items.map(([v, t]) => `<option value="${v}">${t}</option>`).join(''));
+  addOpts($('#dobD'), Array.from({ length: 31 }, (_, i) => [i + 1, i + 1]));
+  addOpts($('#dobM'), MONTHS.map((m, i) => [i + 1, m]));
+  const thisYear = new Date().getFullYear();
+  addOpts($('#dobY'), Array.from({ length: thisYear - 1920 - 2 }, (_, i) => [thisYear - 3 - i, thisYear - 3 - i]));
+  // מחזיר תאריך בפורמט 2012-05-10, או ריק אם התאריך חסר או לא קיים (למשל 31 בפברואר)
+  function dobIso() {
+    const d = +$('#dobD').value, m = +$('#dobM').value, y = +$('#dobY').value;
+    if (!d || !m || !y) return '';
+    const dt = new Date(y, m - 1, d);
+    if (dt.getMonth() !== m - 1 || dt.getDate() !== d) return '';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  function ageFrom(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-').map(Number);
+    const now = new Date();
+    let a = now.getFullYear() - y;
+    if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) a--;
+    return a;
+  }
+  function updateAge() {
+    $$('.dob select').forEach(s => s.classList.toggle('empty', !s.value));
+    const a = ageFrom(dobIso());
+    const ok = a !== null && a >= 3 && a <= 110;
+    $('#ageHelp').innerHTML = ok ? `<span class="age-badge">גיל ${a}${a < 18 ? ' · נדרשת גם חתימת הורה' : ''}</span>` : '';
+    const minor = ok && a < 18;
+    $('#minorCard').hidden = !minor;
+    if (minor) {
+      const nm = $('#name').value.trim();
+      $('#minorText').textContent = `מתאמן שלא מלאו לו 18 שנה צריך את ההסכמה של אחד מהוריו. ההורה מאשר/ת ש${nm ? nm : 'הקטין/ה'} יתאמן/תתאמן בכל סוג אימון.`;
+    }
+  }
+  $$('.dob select').forEach(s => s.addEventListener('change', updateAge));
+  updateAge();
+  $('#name').addEventListener('input', () => { if (!$('#minorCard').hidden) updateAge(); });
+
+  /* ---------- משטח חתימה ---------- */
+  class SigPad {
+    constructor(wrap) {
+      this.wrap = wrap;
+      this.canvas = $('canvas', wrap);
+      this.ctx = this.canvas.getContext('2d');
+      this.strokes = [];
+      this.cur = null;
+      const c = this.canvas;
+      c.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        try { c.setPointerCapture(e.pointerId); } catch (_) {}
+        this.cur = [this.pt(e)];
+        this.strokes.push(this.cur);
+        this.draw();
+      });
+      c.addEventListener('pointermove', e => {
+        if (!this.cur) return;
+        e.preventDefault();
+        const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+        (evs.length ? evs : [e]).forEach(ev => this.cur.push(this.pt(ev)));
+        this.draw();
+      });
+      const end = () => { if (this.cur) { this.cur = null; this.changed(); } };
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => c.addEventListener(t, end));
+      $('.sig-clear', wrap).addEventListener('click', () => { this.strokes = []; this.draw(); this.changed(); });
+      new ResizeObserver(() => this.resize()).observe(wrap);
+      this.resize();
+    }
+    pt(e) { const r = this.canvas.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
+    resize() {
+      const r = this.wrap.getBoundingClientRect();
+      if (!r.width) return;
+      this.dpr = window.devicePixelRatio || 1;
+      this.cssW = r.width; this.cssH = r.height;
+      this.canvas.width = Math.round(r.width * this.dpr);
+      this.canvas.height = Math.round(r.height * this.dpr);
+      this.draw();
+    }
+    paint(ctx, W, H, lw, ox = 0, oy = 0, sx = W, sy = H) {
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1b1f3b'; ctx.fillStyle = '#1b1f3b'; ctx.lineWidth = lw;
+      for (const s of this.strokes) {
+        const p = s.map(([x, y]) => [(x - ox) * sx, (y - oy) * sy]);
+        if (p.length === 1) { ctx.beginPath(); ctx.arc(p[0][0], p[0][1], lw / 2, 0, Math.PI * 2); ctx.fill(); continue; }
+        ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]);
+        for (let i = 1; i < p.length - 1; i++) {
+          const mx = (p[i][0] + p[i + 1][0]) / 2, my = (p[i][1] + p[i + 1][1]) / 2;
+          ctx.quadraticCurveTo(p[i][0], p[i][1], mx, my);
+        }
+        const last = p[p.length - 1]; ctx.lineTo(last[0], last[1]);
+        ctx.stroke();
+      }
+    }
+    draw() {
+      const { ctx, canvas } = this;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.paint(ctx, canvas.width, canvas.height, 2.4 * (this.dpr || 1));
+      this.wrap.classList.toggle('has', !this.isEmpty());
+    }
+    isEmpty() {
+      const pts = this.strokes.flat();
+      if (pts.length < 6) return true;
+      const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+      return (Math.max(...xs) - Math.min(...xs)) < 0.06 && (Math.max(...ys) - Math.min(...ys)) < 0.06;
+    }
+    changed() { this.wrap.closest('.field')?.classList.remove('invalid'); }
+    toDataURL() {
+      // חותך את השוליים כך שהחתימה ממלאת את המקום שלה ב-PDF
+      const pts = this.strokes.flat();
+      const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+      const pad = 0.03;
+      const x0 = Math.max(0, Math.min(...xs) - pad), x1 = Math.min(1, Math.max(...xs) + pad);
+      const y0 = Math.max(0, Math.min(...ys) - pad * 2), y1 = Math.min(1, Math.max(...ys) + pad * 2);
+      const scale = 3;
+      const W = Math.max(40, Math.round((x1 - x0) * this.cssW * scale)), H = Math.max(20, Math.round((y1 - y0) * this.cssH * scale));
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      this.paint(c.getContext('2d'), W, H, 2.4 * scale, x0, y0, this.cssW * scale, this.cssH * scale);
+      return c.toDataURL('image/png');
+    }
+  }
+  const sigMain = new SigPad($('#sigMain'));
+  const sigParent = new SigPad($('#sigParent'));
+
+  /* ---------- בדיקת הטופס ---------- */
+  const fieldOf = key => $(`[data-f="${key}"]`);
+  $('#form').addEventListener('input', e => e.target.closest('.field')?.classList.remove('invalid'));
+  $('#agree').addEventListener('change', () => fieldOf('agree').classList.remove('invalid'));
+
+  function collect() {
+    const dob = dobIso();
+    const age = ageFrom(dob);
+    const answers = leafIds.map(id => {
+      const row = $(`.q-row[data-q="${id}"]`);
+      return { id, yes: $('input[value=yes]', row).checked, detail: $('.q-detail input', row).value.trim() };
+    });
+    return {
+      name: $('#name').value.trim().replace(/\s+/g, ' '),
+      id: $('#tz').value.trim(),
+      dob,
+      age,
+      minor: age !== null && age < 18,
+      answers,
+      pname: $('#pname').value.trim().replace(/\s+/g, ' '),
+      pid: $('#ptz').value.trim()
+    };
+  }
+
+  function validate(d) {
+    const bad = [];
+    const twoWords = s => s.split(' ').filter(w => w.length >= 1).length >= 2 && s.length >= 4;
+    if (!twoWords(d.name)) bad.push('name');
+    if (!validId(d.id)) bad.push('id');
+    if (d.age === null || d.age < 3 || d.age > 110 || d.dob > todayIso()) bad.push('dob');
+    d.answers.forEach(a => { if (a.yes && !a.detail) bad.push('d' + a.id); });
+    if (!$('#agree').checked) bad.push('agree');
+    if (sigMain.isEmpty()) bad.push('sig');
+    if (d.minor) {
+      if (!twoWords(d.pname)) bad.push('pname');
+      if (!validId(d.pid) || d.pid.padStart(9, '0') === d.id.padStart(9, '0')) bad.push('pid');
+      if (sigParent.isEmpty()) bad.push('psig');
+    }
+    $$('.field.invalid').forEach(f => f.classList.remove('invalid'));
+    bad.forEach(k => fieldOf(k)?.classList.add('invalid'));
+    if (bad.length) {
+      const first = fieldOf(bad[0]);
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const inp = $('input', first);
+      if (inp && inp.type !== 'checkbox' && inp.type !== 'radio') setTimeout(() => inp.focus({ preventScroll: true }), 350);
+    }
+    return bad.length === 0;
+  }
+
+  /* ---------- בניית עמודי ה-PDF ---------- */
+  const fmtDate = iso => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+  const pad2 = n => String(n).padStart(2, '0');
+  const COURT = (w, h, stroke, sw) => `
+    <svg width="${w}" height="${h}" viewBox="0 0 190 92" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="none" stroke="${stroke}" stroke-width="${sw}" vector-effect="non-scaling-stroke">
+        <rect x="1" y="1" width="188" height="90" vector-effect="non-scaling-stroke"/>
+        <line x1="31" y1="1" x2="31" y2="91" vector-effect="non-scaling-stroke"/>
+        <line x1="159" y1="1" x2="159" y2="91" vector-effect="non-scaling-stroke"/>
+        <line x1="95" y1="1" x2="95" y2="91" vector-effect="non-scaling-stroke"/>
+        <line x1="31" y1="46" x2="159" y2="46" vector-effect="non-scaling-stroke"/>
+      </g>
+    </svg>`;
+  const HEAD = `
+    <div class="pp-head tex">
+      <div class="pp-brand">
+        <img class="pp-logo" src="${window.ASSETS.logo}" alt="">
+        <div><b>פאדל לב השרון</b><span>מופעל על ידי אי די פאדל בע״מ</span></div>
+      </div>
+      ${COURT(190, 94, 'rgba(255,255,255,.28)', 1.5)}
+    </div>`;
+  const FOOT = (p, total) => `
+    <div class="pp-foot tex">
+      <span><b>פאדל לב השרון</b> &nbsp;•&nbsp; המועדון מופעל על ידי אי די פאדל בע״מ</span>
+      <span>עמוד ${p} מתוך ${total}</span>
+    </div>`;
+
+  function buildPdf(d, sigs, when) {
+    const total = d.minor ? 2 : 1;
+    const ans = Object.fromEntries(d.answers.map(a => [a.id, a]));
+    const cell = id => {
+      const a = ans[id];
+      return a.yes ? `<td class="a yes">כן</td>` : `<td class="a">לא</td>`;
+    };
+    const rows = QUESTIONS.map(q => {
+      if (!q.subs) return `<tr class="main"><td class="n">${q.n}.</td><td>${esc(q.t)}</td>${cell(q.n)}</tr>`;
+      return `<tr class="main"><td class="n">${q.n}.</td><td colspan="2">${esc(q.t)}</td></tr>` +
+        q.subs.map(([l, t, note]) => `<tr><td></td><td class="sub"><b>${l}.</b>${esc(t)}${note ? ` <span class="note">(${esc(note)})</span>` : ''}</td>${cell(q.n + l)}</tr>`).join('');
+    }).join('');
+    const yes = d.answers.filter(a => a.yes);
+    const yesRows = (yes.length ? yes : [{ id: '-', detail: 'אין. התשובה לכל השאלות היא "לא".' }]).map(a => `
+      <div class="pp-row">
+        <div class="pp-f qn"><span>מס׳ שאלה:</span><span class="pp-v">${esc(a.id)}</span></div>
+        <div class="pp-f qd"><span>פירוט:</span><span class="pp-v">${esc(a.detail)}</span></div>
+      </div>`).join('');
+    const day = `${pad2(when.getDate())}/${pad2(when.getMonth() + 1)}/${when.getFullYear()}`;
+    const stamp = `${day} בשעה ${pad2(when.getHours())}:${pad2(when.getMinutes())}`;
+
+    const page1 = `
+      <div class="pp">
+        ${HEAD}
+        <div class="pp-body">
+          <div class="pp-top">
+            <div class="pp-title">
+              <h1>טופס הצהרת בריאות<br>למתאמן/ת</h1>
+              <p>(האמור בשאלון מנוסח בלשון זכר מטעמי נוחות, אך הוא מיועד גם לנקבה.)</p>
+            </div>
+            <div class="pp-box">
+              <div class="pp-f"><span>שם ושם משפחה:</span><span class="pp-v">${esc(d.name)}</span></div>
+              <div class="pp-f"><span>תעודת זהות:</span><span class="pp-v">${esc(d.id)}</span></div>
+              <div class="pp-f"><span>תאריך לידה:</span><span class="pp-v">${fmtDate(d.dob)}</span><span>גיל:</span><span class="pp-v" style="flex:0 0 46px">${d.age}</span></div>
+            </div>
+          </div>
+
+          <div class="pp-h"><b>חלק א׳ - שאלון רפואי</b><i></i></div>
+          <div>אנא קרא את השאלות להלן בצורה יסודית ופעל לפי הנחיות אלה:</div>
+          <ul class="pp-rules">
+            <li><b>א.</b><span>אם התשובה על אחת או יותר מהשאלות שבחלק א׳ לטופס זה היא חיובית, אז לצורך קבלתך למועדון עלייך להמציא למועדון גם תעודה רפואית מרופא לפיה הרופא מאשר כי אין סיכון לבריאותך באימון במועדון; המועדון יקבל מתאמן שהמציא תעודה רפואית שלא עברו 3 חודשים ממועד הנפקתה.</span></li>
+            <li><b>ב.</b><span>מלא את ההצהרה שבחלק ב׳ לטופס זה וחתום עליה. אם התשובה לשאלה כלשהי היא חיובית - ציין זאת ופרט בחלק ב׳.</span></li>
+            <li><b>ג.</b><span>בכל מקרה של שינוי במצבך הרפואי, יש להתייעץ עם רופא לגבי המשך פעילות במועדון.</span></li>
+          </ul>
+          <div class="pp-note"><b>התשובות סומנו בטופס הדיגיטלי:</b> "לא" היא ברירת המחדל. תשובות "כן" מסומנות בטבלה ומפורטות בחלק ב׳.</div>
+          <table class="pp-q">${rows}</table>
+
+          <div class="pp-b">
+            <div class="pp-h"><b>חלק ב׳ - הצהרה</b><i></i></div>
+            <p>הנני מצהיר/ה כי קראתי את השאלות שבחלק א׳ וכי <b style="color:#61180f">התשובה לכולן היא "לא"</b>, למעט השאלות שפירטתי להלן (אם יש):</p>
+            ${yesRows}
+            ${yes.length ? `<div class="pp-warn">ציינת "כן" לשאלה כלשהי? יש לצרף תעודה רפואית כמפורט בהנחיה א׳.</div>` : ''}
+            <div class="pp-sign">
+              <div class="pp-f"><span>שם ושם משפחה:</span><span class="pp-v">${esc(d.name)}</span></div>
+              <div class="pp-f"><span>תעודת זהות:</span><span class="pp-v">${esc(d.id)}</span></div>
+              <div class="pp-f"><span>חתימה:</span><span class="pp-v"><img class="pp-sigimg" src="${sigs.main}" alt=""></span></div>
+            </div>
+            <div class="pp-meta">מולא ונחתם דיגיטלית בתאריך ${stamp}</div>
+          </div>
+        </div>
+        ${FOOT(1, total)}
+      </div>`;
+
+    const page2 = !d.minor ? '' : `
+      <div class="pp">
+        ${HEAD}
+        <div class="pp-body" style="--s:1">
+          <div class="pp-title"><h1>הצהרת בריאות - קטין</h1></div>
+          <div class="pp-dots"><i style="background:#61180f"></i><i style="background:#b8705e"></i><i style="background:#e6cfc2"></i></div>
+          <div class="pp-h" style="margin-top:22px"><b>הסכמה בכתב של אחד מהורי הקטין</b><i></i></div>
+          <div style="font-size:13.5px;line-height:1.7">מתאמן שלא מלאו לו 18 שנה יצרף להצהרת הבריאות או לתעודה הרפואית, לפי העניין, את ההסכמה מטה, חתומה בידי אחד מהוריו.</div>
+          <div style="font-weight:700;margin-top:14px;font-size:13.5px">אני מסכים/ה כי:</div>
+          <div class="pp-consent" style="font-size:13.5px">
+            <div class="pp-f"><span>שם מלא של הקטין:</span><span class="pp-v">${esc(d.name)}</span></div>
+            <div class="pp-f"><span>תעודת זהות של הקטין:</span><span class="pp-v">${esc(d.id)}</span></div>
+            <div class="pp-f"><span>תאריך לידה של הקטין:</span><span class="pp-v">${fmtDate(d.dob)}</span></div>
+            <div class="pp-f"><span>שם ההורה:</span><span class="pp-v">${esc(d.pname)}</span></div>
+            <div class="pp-f"><span>תעודת זהות של ההורה:</span><span class="pp-v">${esc(d.pid)}</span></div>
+            <div class="pp-f"><span>תאריך:</span><span class="pp-v">${day}</span></div>
+            <div class="pp-f"><span>חתימת הורה:</span><span class="pp-v"><img class="pp-sigimg" style="height:50px" src="${sigs.parent}" alt=""></span></div>
+          </div>
+          <div style="font-weight:700;font-size:13.5px">להתאמן בכל סוג אימון.</div>
+        </div>
+        <div class="pp-court">${COURT(540, 270, '#efe5df', 3)}</div>
+        ${FOOT(2, total)}
+      </div>`;
+
+    const root = $('#pdf-root');
+    root.innerHTML = page1 + page2;
+    return $$('.pp', root);
+  }
+
+  // אם יש הרבה תשובות "כן", מקטין מעט את הגופן כדי שהעמוד הראשון ייכנס בדף אחד
+  function fitPage(page) {
+    const body = $('.pp-body', page);
+    const limit = 1123 - 46 - 14;
+    let s = 1;
+    while (body.offsetTop + body.scrollHeight > limit && s > 0.72) {
+      s -= 0.03;
+      page.style.setProperty('--s', s.toFixed(2));
+    }
+  }
+
+  const waitImages = root => Promise.all($$('img', root).map(img => img.complete && img.naturalWidth ? Promise.resolve() : (img.decode ? img.decode().catch(() => {}) : new Promise(r => { img.onload = img.onerror = r; }))));
+
+  let lastUrl = null;
+  async function makePdf(d) {
+    if (!window.html2canvas || !window.jspdf) throw new Error('libs');
+    const when = new Date();
+    const sigs = { main: sigMain.toDataURL(), parent: d.minor ? sigParent.toDataURL() : '' };
+    const pages = buildPdf(d, sigs, when);
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    await waitImages($('#pdf-root'));
+    fitPage(pages[0]);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+    window.__pdfPreview = [];
+    for (let i = 0; i < pages.length; i++) {
+      const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 1200 });
+      const img = canvas.toDataURL('image/jpeg', 0.9);
+      window.__pdfPreview.push(img);
+      if (i) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    }
+    pdf.setProperties({ title: `הצהרת בריאות - ${d.name}`, subject: 'הצהרת בריאות - פאדל לב השרון', creator: 'פאדל לב השרון' });
+    $('#pdf-root').innerHTML = '';
+    const safeName = d.name.replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '-');
+    const fname = `הצהרת-בריאות-${safeName}-${when.getFullYear()}-${pad2(when.getMonth() + 1)}-${pad2(when.getDate())}.pdf`;
+    return { blob: pdf.output('blob'), fname };
+  }
+
+  /* ---------- שליחה ---------- */
+  const busy = $('#busy');
+  let current = null;
+  $('#form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const d = collect();
+    if (!validate(d)) return;
+    busy.classList.add('show');
+    window.scrollTo(0, 0);
+    try {
+      current = await makePdf(d);
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = URL.createObjectURL(current.blob);
+      const file = new File([current.blob], current.fname, { type: 'application/pdf' });
+      const canShare = !!(navigator.canShare && navigator.canShare({ files: [file] }));
+      current.file = file;
+      $('#shareBtn').hidden = !canShare;
+      const open = $('#openBtn');
+      open.href = lastUrl;
+      open.className = 'btn ' + (canShare ? 'btn-ghost' : 'btn-primary');
+      if (!canShare) open.setAttribute('download', current.fname); else open.removeAttribute('download');
+      open.textContent = canShare ? 'פתיחת ה-PDF' : 'הורדת ה-PDF';
+      $('#doneText').textContent = `ההצהרה של ${d.name} נחתמה ונשמרה כקובץ PDF.`;
+      $('#form').hidden = true;
+      $('#intro').hidden = true;
+      $('#done').hidden = false;
+    } catch (err) {
+      console.error('PDF failed:', err && err.message ? err.message : err);
+      $('#pdf-root').innerHTML = '';
+      alert(err && err.message === 'libs'
+        ? 'לא הצלחנו ליצור את ה-PDF, כי אין חיבור לאינטרנט. בדקו את החיבור ונסו שוב.'
+        : 'לא הצלחנו ליצור את ה-PDF. נסו שוב בעוד רגע.');
+    } finally {
+      busy.classList.remove('show');
+      window.scrollTo(0, 0);
+    }
+  });
+
+  $('#shareBtn').addEventListener('click', async () => {
+    if (!current?.file) return;
+    try { await navigator.share({ files: [current.file], title: 'הצהרת בריאות - פאדל לב השרון' }); }
+    catch (err) { if (err && err.name !== 'AbortError') window.open(lastUrl, '_blank'); }
+  });
+
+  $('#againBtn').addEventListener('click', () => {
+    $('#form').reset();
+    sigMain.strokes = []; sigMain.draw();
+    sigParent.strokes = []; sigParent.draw();
+    updateYes(); updateAge();
+    $$('.field.invalid').forEach(f => f.classList.remove('invalid'));
+    $('#done').hidden = true;
+    $('#form').hidden = false;
+    $('#intro').hidden = false;
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+</body>
+</html>
